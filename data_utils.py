@@ -104,7 +104,7 @@ def preprocess(img: np.ndarray, mask: np.ndarray, img_size: int) -> np.ndarray:
     """
     # Feel free to add more pre-processing here.
     # ------------------------- ADD YOUR CODE HERE ----------------------------
-    #preprocessed_img = normalize(img, mask)
+    preprocessed_img = normalize(img, mask)
     preprocessed_img = resize(preprocessed_img, [img_size] * 3)
     # --------------------------------- END -----------------------------------
     return preprocessed_img
