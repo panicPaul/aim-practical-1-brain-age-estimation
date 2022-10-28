@@ -62,13 +62,13 @@ class SqueezeAndExcitationBlock(nn.Module):
         assert layers >= 2 # input / output layer + n intermediate layers
         self.input_layer = DepthwiseSeperableConv3D(in_channels, out_channels, kernel_size, 1, padding, dilation)
         self.output_layer = DepthwiseSeperableConv3D(out_channels, out_channels, kernel_size, stride, padding, dilation)
-        self.input_bn = nn.BatchNorm3d()
-        self.output_bn = nn.BatchNorm3d()
+        self.input_bn = nn.BatchNorm3d(out_channels)
+        self.output_bn = nn.BatchNorm3d(out_channels)
 
         self.intermediate_layers = nn.ModuleList()
         for _ in range(layers - 2):
             self.intermediate_layers.append(DepthwiseSeperableConv3D(out_channels, out_channels, kernel_size, 1, padding, dilation))
-            self.intermediate_layers.append(nn.BatchNorm3d())
+            self.intermediate_layers.append(nn.BatchNorm3d(out_channels))
             self.intermediate_layers.append(Act())
         # SE itself still not implemented
         self.se = SqueezeAndExcitation(out_channels)
@@ -103,7 +103,7 @@ class BrainAgeCNN(nn.Module):
         # Feel free to also add arguments to __init__ if you want.
         # ----------------------- ADD YOUR CODE HERE --------------------------
         self.module = nn.ModuleList()
-        self.module.append(nn.Conv3d(4, initial_channels, kernel_size=1)) # initial Conv
+        self.module.append(nn.Conv3d(1, initial_channels, kernel_size=1)) # initial Conv
 
         for i in range(blocks):
             self.module.append(SqueezeAndExcitationBlock(in_channels=initial_channels//2**i, out_channels=initial_channels//2**(i+1), kernel_size=kernel_size,\
