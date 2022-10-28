@@ -40,7 +40,7 @@ class SqueezeAndExcitation(nn.Module):
     def __init__(self, n_channels) -> None:
         super().__init__()
         self.module = nn.ModuleList()
-        self.module.append(None) #channelwise average pooling
+        self.module.append(nn.AdaptiveAvgPool3d((1, 1, 1))) #channelwise average pooling
         self.module.append(nn.Linear(n_channels, n_channels // 8))
         self.module.append(Act())
         self.module.append(nn.Linear(n_channels // 8, n_channels))
@@ -50,8 +50,7 @@ class SqueezeAndExcitation(nn.Module):
         channel_weights = x
         for layer in self.module():
             channel_weights = layer(channel_weights)
-        # multiply....
-        return nn.Identity()(x)
+        return x * channel_weights
 
 
 class SqueezeAndExcitationBlock(nn.Module):

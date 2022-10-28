@@ -75,7 +75,10 @@ def normalize(img: np.ndarray, mask: np.ndarray):
                             variance. Shape (H, W, D)
     """
     # ------------------------- ADD YOUR CODE HERE ----------------------------
-    normalized_img = None
+    mean = np.sum(img) / np.sum(mask)
+    variance = np.sum(np.where(mask == 1, (img - mean) ** 2, 0)) / np.sum(mask)
+    dev = np.sqrt(variance)
+    normalized_img = np.where(mask == 1, (img - mean) / dev, 0)
     # --------------------------------- END -----------------------------------
     return normalized_img
 
@@ -101,7 +104,7 @@ def preprocess(img: np.ndarray, mask: np.ndarray, img_size: int) -> np.ndarray:
     """
     # Feel free to add more pre-processing here.
     # ------------------------- ADD YOUR CODE HERE ----------------------------
-    preprocessed_img = normalize(img, mask)
+    #preprocessed_img = normalize(img, mask)
     preprocessed_img = resize(preprocessed_img, [img_size] * 3)
     # --------------------------------- END -----------------------------------
     return preprocessed_img
@@ -125,8 +128,8 @@ def prefetch_samples(
     load_fn = partial(load_and_preprocess, img_size=img_size)
     res = [load_fn(ID) for ID in IDs]
     # To speed up loading, comment the line above and uncomment the two below.
-    # with Pool(num_processes) as p:
-    #     res = p.map(load_fn, IDs)
+    with Pool(num_processes) as p:
+         res = p.map(load_fn, IDs)
     return np.array(res)[:, None]
 
 
