@@ -48,7 +48,7 @@ class SqueezeAndExcitation(nn.Module):
 
     def forward(self, x):
         channel_weights = x
-        for layer in self.module():
+        for layer in self.module:
             channel_weights = layer(channel_weights)
         return x * channel_weights
 
