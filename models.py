@@ -122,8 +122,8 @@ class BrainAgeCNN(nn.Module):
         """
         # ----------------------- ADD YOUR CODE HERE --------------------------
         pred = imgs
-        for module in self.modules:
-            pred = module(pred)
+        for layer in self.module:
+            pred = layer(pred)
         # ------------------------------- END ---------------------------------
         return pred.squeeze()
 
