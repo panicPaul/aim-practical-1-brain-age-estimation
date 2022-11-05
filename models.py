@@ -11,7 +11,7 @@ class ResNetBlock(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1) -> None:
         super().__init__()
         self.convs = nn.Sequential(*[nn.Conv3d(in_channels, out_channels, 1), nn.ReLU(), \
-            nn.Conv3d(out_channels, out_channels, 3, stride), nn.ReLU(), \
+            nn.Conv3d(out_channels, out_channels, 3, stride, padding=1), nn.ReLU(), \
                 nn.Conv3d(out_channels, out_channels, 1)])
         if stride == 1:
             self.skip = nn.Identity()
@@ -25,6 +25,7 @@ class ResNetBlock(nn.Module):
 
 class ResNet:
     def __init__(self, channels, blocks_per_pyramide_steps) -> None:
+        self.input_layer = nn.Conv3d(1, channels, 3, padding='same')
         self.block1 = nn.ModuleList()
         for i in range(blocks_per_pyramide_steps - 1):
             self.block1.append(ResNetBlock(channels, channels))
