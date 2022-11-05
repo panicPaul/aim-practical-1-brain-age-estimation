@@ -67,7 +67,7 @@ class SqueezeAndExcitationBlock(nn.Module):
             self.intermediate_layers.append(nn.BatchNorm3d(out_channels))
             self.intermediate_layers.append(Act())
 
-        self.output_layer = DepthwiseSeperableConv3D(out_channels, out_channels, kernel_size, stride, padding, dilation)
+        self.output_layer = DepthwiseSeperableConv3D(out_channels, out_channels, kernel_size, stride, kernel_size//2, dilation)
         self.output_bn = nn.BatchNorm3d(out_channels)
 
         # SE itself still not implemented
