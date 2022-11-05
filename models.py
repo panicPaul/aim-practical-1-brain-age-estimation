@@ -81,7 +81,7 @@ class ResNet(nn.Module):
         pred = self(imgs)  # (N)
 
         # ----------------------- ADD YOUR CODE HERE --------------------------
-        loss = nn.MSELoss()(pred, labels)
+        loss = nn.MSELoss()(pred, labels.to(torch.float32))
         # ------------------------------- END ---------------------------------
 
         if return_prediction:
