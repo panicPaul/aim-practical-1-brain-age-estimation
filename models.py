@@ -31,6 +31,7 @@ class ToyModel(nn.Module):
     def forward(self, x):
         x = self.convs(x)
         x = self.avg(x)
+        print(x.shape)
         x = self.mlp(x)
         return x
 
