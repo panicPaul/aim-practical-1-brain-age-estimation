@@ -12,6 +12,7 @@ from skimage.transform import resize
 from torch import Tensor
 from torch.utils.data import Dataset, DataLoader
 
+
 DATA_DIR = './data/brain_age'
 
 
@@ -75,10 +76,16 @@ def normalize(img: np.ndarray, mask: np.ndarray):
                             variance. Shape (H, W, D)
     """
     # ------------------------- ADD YOUR CODE HERE ----------------------------
-    mean = np.sum(img) / np.sum(mask)
-    variance = np.sum(np.where(mask == 1, (img - mean) ** 2, 0)) / np.sum(mask)
-    dev = np.sqrt(variance)
-    normalized_img = np.where(mask == 1, (img - mean) / dev, 0)
+    #mean = np.sum(img) / np.sum(mask)
+    #variance = np.sum(np.where(mask == 1, (img - mean) ** 2, 0)) / np.sum(mask)
+    ##dev = np.sqrt(variance)
+    #normalized_img = np.where(mask == 1, (img - mean) / dev, 0)
+    masked_img = np.ma.masked_equal(img, 0)
+    
+    mean = np.mean(masked_img)
+    std = np.std(masked_img)
+    
+    normalized_img = (img-mean)/std
     # --------------------------------- END -----------------------------------
     return normalized_img
 
