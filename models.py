@@ -46,7 +46,6 @@ class SqueezeAndExcitation(nn.Module):
     def forward(self, x):
         n, c, h, w, d = x.shape
         channel_weights = self.squeeze(x)
-        print(channel_weights.shape)
         channel_weights = self.excite(channel_weights).view(n, c, 1, 1, 1)
         return x * channel_weights.expand_as(x)
 
