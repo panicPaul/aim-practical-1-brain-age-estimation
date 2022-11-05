@@ -110,7 +110,7 @@ class BrainAgeCNN(nn.Module):
         for i in range(blocks):
             self.se_blocks.append(SqueezeAndExcitationBlock(in_channels=initial_channels//2**i, out_channels=initial_channels//2**(i+1), kernel_size=kernel_size,\
                  stride=stride, padding=padding, dilation=dilation, layers=block_layers))
-
+        self.convs = nn.Sequential(*self.se_blocks)
         self.averaging = nn.AdaptiveAvgPool3d(1)
         self.output_layer = nn.Linear(initial_channels // 2 ** block_layers, 1)
         # ------------------------------- END ---------------------------------
@@ -123,7 +123,7 @@ class BrainAgeCNN(nn.Module):
         :return pred: Batch of predicted ages. Shape (N)
         """
         # ----------------------- ADD YOUR CODE HERE --------------------------
-        pred = self.se_blocks(imgs)
+        pred = self.convs(imgs)
         pred = self.averaging(pred)
         pred = nn.Flatten()(pred)
         pred = self.output_layer(pred)
