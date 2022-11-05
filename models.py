@@ -35,6 +35,32 @@ class ToyModel(nn.Module):
         x = self.mlp(x)
         return x
 
+    def train_step(
+        self,
+        imgs: Tensor,
+        labels: Tensor,
+        return_prediction: Optional[bool] = False
+    ):
+        """Perform a training step. Predict the age for a batch of images and
+        return the loss.
+
+        :param imgs: Batch of input images (N, 1, H, W, D)
+        :param labels: Batch of target labels (N)
+        :return loss: The current loss, a single scalar.
+        :return pred
+        """
+        pred = self(imgs)  # (N)
+
+        # ----------------------- ADD YOUR CODE HERE --------------------------
+        loss = nn.SmoothL1Loss()(pred.squeeze(), labels)
+        # ------------------------------- END ---------------------------------
+
+        if return_prediction:
+            return loss, pred
+        else:
+            return loss
+
+
 class DepthwiseSeperableConv3D(nn.Module):
     '''
     Depthwise Seperable 3D Convolution
