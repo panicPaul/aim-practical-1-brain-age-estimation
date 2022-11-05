@@ -104,15 +104,15 @@ class BrainAgeCNN(nn.Module):
 
         # Feel free to also add arguments to __init__ if you want.
         # ----------------------- ADD YOUR CODE HERE --------------------------
-        self.module = nn.ModuleList()
-        self.module.append(nn.Conv3d(1, initial_channels, kernel_size=1)) # initial Conv
+        self.se_blocks = nn.ModuleList()
+        self.se_blocks.append(nn.Conv3d(1, initial_channels, kernel_size=1)) # initial Conv
 
         for i in range(blocks):
-            self.module.append(SqueezeAndExcitationBlock(in_channels=initial_channels//2**i, out_channels=initial_channels//2**(i+1), kernel_size=kernel_size,\
+            self.se_blocks.append(SqueezeAndExcitationBlock(in_channels=initial_channels//2**i, out_channels=initial_channels//2**(i+1), kernel_size=kernel_size,\
                  stride=stride, padding=padding, dilation=dilation, layers=block_layers))
 
-        self.module.append(nn.AdaptiveAvgPool3d((1, 1, 1)))
-        self.module.append(nn.Conv3d(initial_channels // 2**blocks, 1, 1))
+        self.averaging = nn.AdaptiveAvgPool3d(1)
+        self.output_layer = nn.Linear(initial_channels // 2 ** block_layers, 1)
         # ------------------------------- END ---------------------------------
 
     def forward(self, imgs: Tensor) -> Tensor:
@@ -123,11 +123,12 @@ class BrainAgeCNN(nn.Module):
         :return pred: Batch of predicted ages. Shape (N)
         """
         # ----------------------- ADD YOUR CODE HERE --------------------------
-        pred = imgs
-        for layer in self.module:
-            pred = layer(pred)
+        pred = self.se_blocks(imgs)
+        pred = self.averaging(pred)
+        pred = nn.Flatten()(pred)
+        pred = self.output_layer(pred)
         # ------------------------------- END ---------------------------------
-        return pred.squeeze()
+        return pred
 
     def train_step(
         self,
