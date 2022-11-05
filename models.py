@@ -49,12 +49,14 @@ class ResNet(nn.Module):
         for i in range(blocks_per_pyramide_steps - 1):
             self.block4.append(ResNetBlock(channels, channels))
         self.block4.append(ResNetBlock(channels, channels*2, stride=2))
-
+        
         self.b1 = nn.Sequential(*self.block1)
         self.b2 = nn.Sequential(*self.block2)
         self.b3 = nn.Sequential(*self.block3)
         self.b4 = nn.Sequential(*self.block4)
-        self.output = nn.Sequential(*[nn.AdaptiveAvgPool3d(1), nn.Flatten(), nn.Linear(channels * 2, 1)])
+
+        channels *= 2
+        self.output = nn.Sequential(*[nn.AdaptiveAvgPool3d(1), nn.Flatten(), nn.Linear(channels, channels), nn.ReLU(), nn.Linear(channels * 2, 1)])
 
     def forward(self, x):
         x = self.input_layer(x)
@@ -81,7 +83,7 @@ class ResNet(nn.Module):
         pred = self(imgs)  # (N)
 
         # ----------------------- ADD YOUR CODE HERE --------------------------
-        loss = nn.MSELoss()(pred, labels.to(torch.float32))
+        loss = nn.MSELoss()(pred.squeeze(), labels.to(torch.float32))
         # ------------------------------- END ---------------------------------
 
         if return_prediction:
