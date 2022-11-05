@@ -10,7 +10,7 @@ from torch import Tensor
 
 class ToyModel(nn.Module):
     def __init__(self, initial_channels, conv_layers=4, mlp_layers=3) -> None:
-        super().__init__(self)
+        super.__init__()
         convs = nn.ModuleList()
         mlp = nn.ModuleList()
         convs.append(nn.Conv3d(1, initial_channels, 3, bias=False))
