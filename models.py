@@ -11,21 +11,22 @@ from torch import Tensor
 class ToyModel(nn.Module):
     def __init__(self, initial_channels, conv_layers=4, mlp_layers=3) -> None:
         super().__init__()
-        convs = nn.ModuleList()
-        mlp = nn.ModuleList()
-        convs.append(nn.Conv3d(1, initial_channels, 3, bias=False))
-        convs.append(nn.ReLU())
+        conv_layers = nn.ModuleList()
+        conv_layers.append(nn.Conv3d(1, initial_channels, 3, bias=False))
+        conv_layers.append(nn.ReLU())
         for i in range(conv_layers):
-            convs.append(nn.Conv3d(initial_channels * 2**i, initial_channels * 2**(i + 1), 3, stride=2, padding=1))
-            convs.append(nn.ReLU())
-        self.convs = nn.Sequential(*convs)
-        self.avg = nn.Sequential(*[nn.AdaptiveAvgPool3d(1), nn.Flatten()])
+            conv_layers.append(nn.Conv3d(initial_channels * 2**i, initial_channels * 2**(i + 1), 3, stride=2, padding=1))
+            conv_layers.append(nn.ReLU())
+        self.convs = nn.Sequential(*conv_layers)
 
+        self.avg = nn.Sequential(*[nn.AdaptiveAvgPool3d(1), nn.Flatten()])
+        
+        mlp_layers = nn.ModuleList()
         for _ in range(mlp_layers - 1):
-            mlp.append(nn.Sequential(initial_channels * 2**conv_layers, initial_channels * 2**conv_layers))
-            mlp.append(nn.ReLU())
-        mlp.append(nn.Sequential(initial_channels // conv_layers, 1))
-        self.mlp = nn.Sequential(*mlp)
+            mlp_layers.append(nn.Sequential(initial_channels * 2**conv_layers, initial_channels * 2**conv_layers))
+            mlp_layers.append(nn.ReLU())
+        mlp_layers.append(nn.Sequential(initial_channels // conv_layers, 1))
+        self.mlp = nn.Sequential(*mlp_layers)
 
     def forward(self, x):
         x = self.convs(x)
