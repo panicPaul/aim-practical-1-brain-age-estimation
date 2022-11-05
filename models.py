@@ -40,18 +40,14 @@ class SqueezeAndExcitation(nn.Module):
     def __init__(self, n_channels) -> None:
         super().__init__()
         self.module = nn.ModuleList()
-        self.module.append(nn.AdaptiveAvgPool3d(1)) #channelwise average pooling
-        self.module.append(nn.Conv3d(n_channels, n_channels // 8, 1))
-        self.module.append(nn.ReLU())
-        self.module.append(nn.Conv3d(n_channels // 8, n_channels, 1))
-        self.module.append(nn.Sigmoid())
-
+        self.squeeze = nn.AdaptiveAvgPool3d(1) #channelwise average pooling
+        self.excite = nn.Sequential(*[nn.Conv3d(n_channels, n_channels // 8, 1), nn.ReLU(), \
+            nn.Conv3d(n_channels // 8, n_channels, 1), nn.Sigmoid()])
     def forward(self, x):
         n, c, h, w, d = x.shape
-        channel_weights = x
-        for layer in self.module:
-            channel_weights = layer(channel_weights)
-        channel_weights = channel_weights.view(n, c, 1, 1, 1)
+        channel_weights = self.squeeze(x)
+        print(channel_weights.shape)
+        channel_weights = self.excite(channel_weights).view(n, c, 1, 1, 1)
         return x * channel_weights.expand_as(x)
 
 
@@ -63,15 +59,17 @@ class SqueezeAndExcitationBlock(nn.Module):
         super().__init__()
         assert layers >= 2 # input / output layer + n intermediate layers
         self.input_layer = DepthwiseSeperableConv3D(in_channels, out_channels, kernel_size, 1, padding, dilation)
-        self.output_layer = DepthwiseSeperableConv3D(out_channels, out_channels, kernel_size, stride, padding, dilation)
         self.input_bn = nn.BatchNorm3d(out_channels)
-        self.output_bn = nn.BatchNorm3d(out_channels)
 
         self.intermediate_layers = nn.ModuleList()
         for _ in range(layers - 2):
             self.intermediate_layers.append(DepthwiseSeperableConv3D(out_channels, out_channels, kernel_size, 1, padding, dilation))
             self.intermediate_layers.append(nn.BatchNorm3d(out_channels))
             self.intermediate_layers.append(Act())
+
+        self.output_layer = DepthwiseSeperableConv3D(out_channels, out_channels, kernel_size, stride, padding, dilation)
+        self.output_bn = nn.BatchNorm3d(out_channels)
+
         # SE itself still not implemented
         self.se = SqueezeAndExcitation(out_channels)
 
