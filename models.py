@@ -158,14 +158,14 @@ class BrainAgeCNN(nn.Module):
         # Feel free to also add arguments to __init__ if you want.
         # ----------------------- ADD YOUR CODE HERE --------------------------
         self.se_blocks = nn.ModuleList()
-        self.se_blocks.append(nn.Conv3d(input_dim, initial_channels, kernel_size=1)) # initial Conv
+        self.se_blocks.append(nn.Conv3d(input_dim, initial_channels, kernel_size=3, bias=False, padding='same')) # initial Conv
 
         for i in range(blocks):
             self.se_blocks.append(SqueezeAndExcitationBlock(in_channels=initial_channels * 2**i, out_channels=initial_channels * 2**(i+1), kernel_size=kernel_size,\
                  stride=stride, padding=padding, dilation=dilation, layers=block_layers))
         self.convs = nn.Sequential(*self.se_blocks)
         self.averaging = nn.AdaptiveAvgPool3d(1)
-        self.output_mlp = nn.Sequential(nn.Linear(initial_channels // 2 ** blocks, initial_channels // 2 ** blocks), nn.ReLU(), nn.Linear(initial_channels // 2 ** blocks, 1))
+        self.output_mlp = nn.Sequential(nn.Linear(initial_channels * 2**blocks, initial_channels * 2**blocks), nn.ReLU(), nn.Linear(initial_channels * 2**blocks, 1))
         # ------------------------------- END ---------------------------------
 
     def forward(self, imgs: Tensor) -> Tensor:
