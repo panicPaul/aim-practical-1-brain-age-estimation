@@ -7,6 +7,61 @@ import torch.nn.functional as F
 
 from torch import Tensor
 
+class ResNetBlock(nn.Module):
+    def __init__(self, in_channels, out_channels, stride=1) -> None:
+        super().__init__()
+        self.convs = nn.Sequential(*[nn.Conv3d(in_channels, out_channels, 1), nn.ReLU(), \
+            nn.Conv3d(out_channels, out_channels, 3, stride), nn.ReLU(), \
+                nn.Conv3d(out_channels, out_channels, 1)])
+        if stride == 1:
+            self.skip = nn.Identity()
+        else: 
+            self.skip = nn.Sequential(nn.MaxPool3d(2, 2), nn.Conv3d(in_channels, out_channels, 1))
+
+        
+    def forward(self, x):
+        pred = self.convs(x)
+        return pred + self.skip(x)
+
+class ResNet:
+    def __init__(self, channels, blocks_per_pyramide_steps) -> None:
+        self.block1 = nn.ModuleList()
+        for i in range(blocks_per_pyramide_steps - 1):
+            self.block1.append(ResNetBlock(channels, channels))
+        self.block1.append(ResNetBlock(channels, channels*2, stride=2))
+
+        self.block2 = nn.ModuleList()
+        chanels *= 2
+        for i in range(blocks_per_pyramide_steps - 1):
+            self.block2.append(ResNetBlock(channels, channels))
+        self.block2.append(ResNetBlock(channels, channels*2, stride=2))
+
+        channels *= 2
+        self.block3 = nn.ModuleList()
+        for i in range(blocks_per_pyramide_steps - 1):
+            self.block3.append(ResNetBlock(channels, channels))
+        self.block3.append(ResNetBlock(channels, channels*2, stride=2))
+        
+        channels *= 2
+        self.block4 = nn.ModuleList()
+        for i in range(blocks_per_pyramide_steps - 1):
+            self.block4.append(ResNetBlock(channels, channels))
+        self.block4.append(ResNetBlock(channels, channels*2, stride=2))
+
+        self.b1 = nn.Sequential(*self.block1)
+        self.b2 = nn.Sequential(*self.block2)
+        self.b3 = nn.Sequential(*self.block3)
+        self.b4 = nn.Sequential(*self.block4)
+        self.output = nn.Sequential(*[nn.AdaptiveAvgPool3d(), nn.Flatten(), nn.Linear(channels * 2, 1)])
+
+    def forward(self, x):
+        x = self.b1(x)
+        x = self.b2(x)
+        x = self.b3(x)
+        x = self.b4(x)
+        return self.output(x)
+
+
 
 class ToyModel(nn.Module):
     def __init__(self, initial_channels, n_convs=4, n_linear=3) -> None:
