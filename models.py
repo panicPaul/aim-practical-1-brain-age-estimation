@@ -75,7 +75,7 @@ class SqueezeAndExcitationBlock(nn.Module):
         # SE itself still not implemented
         self.se = SqueezeAndExcitation(out_channels)
 
-        if stride == 1:
+        if stride == 1 and out_channels == in_channels:
             self.skip = nn.Identity()
         else:
             self.skip = nn.Conv3d(in_channels, out_channels, 1, padding=0)
@@ -99,7 +99,7 @@ class BrainAgeCNN(nn.Module):
     """
     The BrainAgeCNN predicts the age given a brain MR-image.
     """
-    def __init__(self, initial_channels, kernel_size, stride=1, padding='same', dilation=1, blocks=4, block_layers=5) -> None:
+    def __init__(self, initial_channels, kernel_size, stride=2, padding='same', dilation=1, blocks=4, block_layers=5) -> None:
         super().__init__()
 
         # Feel free to also add arguments to __init__ if you want.
