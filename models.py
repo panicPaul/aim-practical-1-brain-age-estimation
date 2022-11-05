@@ -40,10 +40,10 @@ class SqueezeAndExcitation(nn.Module):
     def __init__(self, n_channels) -> None:
         super().__init__()
         self.module = nn.ModuleList()
-        self.module.append(nn.AdaptiveAvgPool3d((1, 1, 1))) #channelwise average pooling
-        self.module.append(nn.Linear(n_channels, n_channels // 8))
+        self.module.append(nn.AdaptiveAvgPool3d(1)) #channelwise average pooling
+        self.module.append(nn.Conv3d(n_channels, n_channels // 8))
         self.module.append(nn.ReLU())
-        self.module.append(nn.Linear(n_channels // 8, n_channels))
+        self.module.append(nn.Conv3d(n_channels // 8, n_channels))
         self.module.append(nn.Sigmoid())
 
     def forward(self, x):
@@ -79,7 +79,7 @@ class SqueezeAndExcitationBlock(nn.Module):
         if stride == 1:
             self.skip = nn.Identity()
         else:
-            self.skip = nn.Linear(in_channels, out_channels)
+            self.skip = nn.Conv3d(in_channels, out_channels, 1)
 
     def forward(self, x):
         skip = self.skip(x)
@@ -113,7 +113,7 @@ class BrainAgeCNN(nn.Module):
                  stride=stride, padding=padding, dilation=dilation, layers=block_layers))
 
         self.module.append(nn.AdaptiveAvgPool3d((1, 1, 1)))
-        self.module.append(nn.Linear(initial_channels // 2**blocks, 1))
+        self.module.append(nn.Conv3d(initial_channels // 2**blocks, 1, 1))
         # ------------------------------- END ---------------------------------
 
     def forward(self, imgs: Tensor) -> Tensor:
