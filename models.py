@@ -7,6 +7,32 @@ import torch.nn.functional as F
 
 from torch import Tensor
 
+
+class ToyModel(nn.Module):
+    def __init__(self, initial_channels, conv_layers=4, mlp_layers=3) -> None:
+        super().__init__(self)
+        convs = nn.ModuleList()
+        mlp = nn.ModuleList()
+        convs.append(nn.Conv3d(1, initial_channels, 3, bias=False))
+        convs.append(nn.ReLU())
+        for i in range(conv_layers):
+            convs.append(nn.Conv3d(initial_channels * 2**i, initial_channels * 2**(i + 1), 3, stride=2, padding=1))
+            convs.append(nn.ReLU())
+        self.convs = nn.Sequential(*convs)
+        self.avg = nn.Sequential(*[nn.AdaptiveAvgPool3d(1), nn.Flatten()])
+
+        for _ in range(mlp_layers - 1):
+            mlp.append(nn.Sequential(initial_channels * 2**conv_layers, initial_channels * 2**conv_layers))
+            mlp.append(nn.ReLU())
+        mlp.append(nn.Sequential(initial_channels // conv_layers, 1))
+        self.mlp = nn.Sequential(*mlp)
+
+    def forward(self, x):
+        x = self.convs(x)
+        x = self.avg(x)
+        x = self.mlp(x)
+        return x
+
 class DepthwiseSeperableConv3D(nn.Module):
     '''
     Depthwise Seperable 3D Convolution
@@ -107,7 +133,7 @@ class BrainAgeCNN(nn.Module):
         self.se_blocks.append(nn.Conv3d(input_dim, initial_channels, kernel_size=1)) # initial Conv
 
         for i in range(blocks):
-            self.se_blocks.append(SqueezeAndExcitationBlock(in_channels=initial_channels//2**i, out_channels=initial_channels//2**(i+1), kernel_size=kernel_size,\
+            self.se_blocks.append(SqueezeAndExcitationBlock(in_channels=initial_channels * 2**i, out_channels=initial_channels * 2**(i+1), kernel_size=kernel_size,\
                  stride=stride, padding=padding, dilation=dilation, layers=block_layers))
         self.convs = nn.Sequential(*self.se_blocks)
         self.averaging = nn.AdaptiveAvgPool3d(1)
