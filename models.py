@@ -42,15 +42,17 @@ class SqueezeAndExcitation(nn.Module):
         self.module = nn.ModuleList()
         self.module.append(nn.AdaptiveAvgPool3d((1, 1, 1))) #channelwise average pooling
         self.module.append(nn.Linear(n_channels, n_channels // 8))
-        self.module.append(Act())
+        self.module.append(nn.ReLU())
         self.module.append(nn.Linear(n_channels // 8, n_channels))
         self.module.append(nn.Sigmoid())
 
     def forward(self, x):
+        n, c, h, w, d = x.shape
         channel_weights = x
         for layer in self.module:
             channel_weights = layer(channel_weights)
-        return x * channel_weights
+        channel_weights = channel_weights.view(n, c, 1, 1, 1)
+        return x * channel_weights.expand_as(x)
 
 
 class SqueezeAndExcitationBlock(nn.Module):
@@ -60,7 +62,8 @@ class SqueezeAndExcitationBlock(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, layers=5):
         super().__init__()
         assert layers >= 2 # input / output layer + n intermediate layers
-        self.input_layer = DepthwiseSeperableConv3D(in_channels, out_channels, kernel_size, 1, padding, dilation)
+        first_layer_padding = 0 if padding=='same' else padding
+        self.input_layer = DepthwiseSeperableConv3D(in_channels, out_channels, kernel_size, 1, first_layer_padding, dilation)
         self.output_layer = DepthwiseSeperableConv3D(out_channels, out_channels, kernel_size, stride, padding, dilation)
         self.input_bn = nn.BatchNorm3d(out_channels)
         self.output_bn = nn.BatchNorm3d(out_channels)
@@ -97,7 +100,7 @@ class BrainAgeCNN(nn.Module):
     """
     The BrainAgeCNN predicts the age given a brain MR-image.
     """
-    def __init__(self, initial_channels, kernel_size, stride=1, padding=0, dilation=1, blocks=4, block_layers=5) -> None:
+    def __init__(self, initial_channels, kernel_size, stride=1, padding='same', dilation=1, blocks=4, block_layers=5) -> None:
         super().__init__()
 
         # Feel free to also add arguments to __init__ if you want.
