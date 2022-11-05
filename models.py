@@ -64,6 +64,31 @@ class ResNet(nn.Module):
         x = self.b4(x)
         return self.output(x)
 
+    def train_step(
+        self,
+        imgs: Tensor,
+        labels: Tensor,
+        return_prediction: Optional[bool] = False
+    ):
+        """Perform a training step. Predict the age for a batch of images and
+        return the loss.
+
+        :param imgs: Batch of input images (N, 1, H, W, D)
+        :param labels: Batch of target labels (N)
+        :return loss: The current loss, a single scalar.
+        :return pred
+        """
+        pred = self(imgs)  # (N)
+
+        # ----------------------- ADD YOUR CODE HERE --------------------------
+        loss = nn.MSELoss()(pred, labels)
+        # ------------------------------- END ---------------------------------
+
+        if return_prediction:
+            return loss, pred
+        else:
+            return loss
+
 
 
 class ToyModel(nn.Module):
