@@ -112,7 +112,7 @@ class BrainAgeCNN(nn.Module):
                  stride=stride, padding=padding, dilation=dilation, layers=block_layers))
         self.convs = nn.Sequential(*self.se_blocks)
         self.averaging = nn.AdaptiveAvgPool3d(1)
-        self.output_layer = nn.Linear(initial_channels // 2 ** block_layers, 1)
+        self.output_layer = nn.Linear(initial_channels // 2 ** blocks, 1)
         # ------------------------------- END ---------------------------------
 
     def forward(self, imgs: Tensor) -> Tensor:
