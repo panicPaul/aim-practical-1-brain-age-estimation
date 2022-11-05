@@ -25,7 +25,7 @@ class ToyModel(nn.Module):
         for _ in range(n_linear - 1):
             mlp_layers.append(nn.Linear(initial_channels * 2**n_convs, initial_channels * 2**n_convs))
             mlp_layers.append(nn.ReLU())
-        mlp_layers.append(nn.Linear(initial_channels // n_convs, 1))
+        mlp_layers.append(nn.Linear(initial_channels * 2**n_convs, 1))
         self.mlp = nn.Sequential(*mlp_layers)
 
     def forward(self, x):
