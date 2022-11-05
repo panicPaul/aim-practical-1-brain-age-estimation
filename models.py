@@ -32,7 +32,7 @@ class ResNet:
         self.block1.append(ResNetBlock(channels, channels*2, stride=2))
 
         self.block2 = nn.ModuleList()
-        chanels *= 2
+        channels *= 2
         for i in range(blocks_per_pyramide_steps - 1):
             self.block2.append(ResNetBlock(channels, channels))
         self.block2.append(ResNetBlock(channels, channels*2, stride=2))
