@@ -99,13 +99,13 @@ class BrainAgeCNN(nn.Module):
     """
     The BrainAgeCNN predicts the age given a brain MR-image.
     """
-    def __init__(self, initial_channels, kernel_size, stride=2, padding='same', dilation=1, blocks=4, block_layers=5) -> None:
+    def __init__(self, initial_channels, kernel_size, stride=2, padding='same', dilation=1, blocks=4, block_layers=5, input_dim=1) -> None:
         super().__init__()
 
         # Feel free to also add arguments to __init__ if you want.
         # ----------------------- ADD YOUR CODE HERE --------------------------
         self.se_blocks = nn.ModuleList()
-        self.se_blocks.append(nn.Conv3d(1, initial_channels, kernel_size=1)) # initial Conv
+        self.se_blocks.append(nn.Conv3d(input_dim, initial_channels, kernel_size=1)) # initial Conv
 
         for i in range(blocks):
             self.se_blocks.append(SqueezeAndExcitationBlock(in_channels=initial_channels//2**i, out_channels=initial_channels//2**(i+1), kernel_size=kernel_size,\
