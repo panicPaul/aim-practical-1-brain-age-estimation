@@ -53,7 +53,7 @@ class ResNet:
         self.b2 = nn.Sequential(*self.block2)
         self.b3 = nn.Sequential(*self.block3)
         self.b4 = nn.Sequential(*self.block4)
-        self.output = nn.Sequential(*[nn.AdaptiveAvgPool3d(), nn.Flatten(), nn.Linear(channels * 2, 1)])
+        self.output = nn.Sequential(*[nn.AdaptiveAvgPool3d(1), nn.Flatten(), nn.Linear(channels * 2, 1)])
 
     def forward(self, x):
         x = self.b1(x)
