@@ -56,7 +56,7 @@ class ResNet(nn.Module):
         self.b4 = nn.Sequential(*self.block4)
 
         channels *= 2
-        self.output = nn.Sequential(*[nn.AdaptiveAvgPool3d(1), nn.Flatten(), nn.Linear(channels, channels), nn.ReLU(), nn.Linear(channels * 2, 1)])
+        self.output = nn.Sequential(*[nn.AdaptiveAvgPool3d(1), nn.Flatten(), nn.Linear(channels, channels), nn.ReLU(), nn.Linear(channels, 1)])
 
     def forward(self, x):
         x = self.input_layer(x)
