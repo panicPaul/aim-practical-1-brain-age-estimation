@@ -62,8 +62,7 @@ class SqueezeAndExcitationBlock(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, layers=5):
         super().__init__()
         assert layers >= 2 # input / output layer + n intermediate layers
-        first_layer_padding = 0 if padding=='same' else padding
-        self.input_layer = DepthwiseSeperableConv3D(in_channels, out_channels, kernel_size, 1, first_layer_padding, dilation)
+        self.input_layer = DepthwiseSeperableConv3D(in_channels, out_channels, kernel_size, 1, padding, dilation)
         self.output_layer = DepthwiseSeperableConv3D(out_channels, out_channels, kernel_size, stride, padding, dilation)
         self.input_bn = nn.BatchNorm3d(out_channels)
         self.output_bn = nn.BatchNorm3d(out_channels)
@@ -79,7 +78,7 @@ class SqueezeAndExcitationBlock(nn.Module):
         if stride == 1:
             self.skip = nn.Identity()
         else:
-            self.skip = nn.Conv3d(in_channels, out_channels, 1)
+            self.skip = nn.Conv3d(in_channels, out_channels, 1, padding=0)
 
     def forward(self, x):
         skip = self.skip(x)
