@@ -77,8 +77,10 @@ class SqueezeAndExcitationBlock(nn.Module):
 
         if stride == 1 and out_channels == in_channels:
             self.skip = nn.Identity()
-        else:
+        elif stride != 1:
             self.skip = nn.Conv3d(in_channels, out_channels, 1, padding=0)
+        else:
+            self.skip = nn.Sequential(nn.MaxPool3d(2,2), nn.Conv3d(in_channels, out_channels, 1, padding=0))
 
     def forward(self, x):
         skip = self.skip(x)
