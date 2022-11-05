@@ -41,9 +41,9 @@ class SqueezeAndExcitation(nn.Module):
         super().__init__()
         self.module = nn.ModuleList()
         self.module.append(nn.AdaptiveAvgPool3d(1)) #channelwise average pooling
-        self.module.append(nn.Conv3d(n_channels, n_channels // 8))
+        self.module.append(nn.Conv3d(n_channels, n_channels // 8, 1))
         self.module.append(nn.ReLU())
-        self.module.append(nn.Conv3d(n_channels // 8, n_channels))
+        self.module.append(nn.Conv3d(n_channels // 8, n_channels, 1))
         self.module.append(nn.Sigmoid())
 
     def forward(self, x):
