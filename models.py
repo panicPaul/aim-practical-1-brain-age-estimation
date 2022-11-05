@@ -146,7 +146,7 @@ class BrainAgeCNN(nn.Module):
         pred = self(imgs)  # (N)
 
         # ----------------------- ADD YOUR CODE HERE --------------------------
-        loss = nn.SmoothL1Loss()(pred, labels)
+        loss = nn.SmoothL1Loss()(pred.squeeze(), labels)
         # ------------------------------- END ---------------------------------
 
         if return_prediction:
