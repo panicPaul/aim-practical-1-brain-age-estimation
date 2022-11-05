@@ -23,8 +23,9 @@ class ResNetBlock(nn.Module):
         pred = self.convs(x)
         return pred + self.skip(x)
 
-class ResNet:
+class ResNet(nn.Module):
     def __init__(self, channels, blocks_per_pyramide_steps) -> None:
+        super().__init__()
         self.input_layer = nn.Conv3d(1, channels, 3, padding='same')
         self.block1 = nn.ModuleList()
         for i in range(blocks_per_pyramide_steps - 1):
