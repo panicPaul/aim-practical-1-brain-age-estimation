@@ -81,7 +81,6 @@ def normalize(img: np.ndarray, mask: np.ndarray):
     ##dev = np.sqrt(variance)
     #normalized_img = np.where(mask == 1, (img - mean) / dev, 0)
     masked_img = np.ma.masked_equal(img, 0)
-    
     mean = np.mean(masked_img)
     std = np.std(masked_img)
     
